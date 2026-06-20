@@ -1,0 +1,60 @@
+name: ci
+
+# Checks on every PR and push. On a green push to main, tell the infrastructure
+# repo to promote this SHA to staging. This repo does not touch production;
+# that happens by promoting staging inside workingdir/infrastructure.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: fmt · check · test · build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Format
+        run: cargo fmt --all --check
+
+      - name: Clippy (with ssh feature)
+        run: cargo clippy --features ssh --all-targets -- -D warnings
+
+      - name: Test
+        run: cargo test --features ssh
+
+      - name: Release build
+        run: cargo build --release --features ssh
+
+  promote-to-staging:
+    name: promote → infrastructure:staging
+    needs: check
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch promote-www-to-staging in workingdir/infrastructure
+        env:
+          # Fine-grained PAT (or GitHub App token) with Actions: write on
+          # workingdir/infrastructure ONLY. Nothing broader.
+          GH_TOKEN: ${{ secrets.INFRASTRUCTURE_DEPLOY_TOKEN }}
+        run: |
+          gh workflow run promote-www-to-staging.yml \
+            --repo workingdir/infrastructure \
+            --ref staging \
+            -f www_sha='${{ github.sha }}' \
+            -f www_ref='${{ github.ref_name }}' \
+            -f source_run_url='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
+            -f triggered_by='${{ github.actor }}'

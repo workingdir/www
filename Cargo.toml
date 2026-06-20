@@ -1,0 +1,27 @@
+[package]
+name = "cwd-ssh"
+version = "0.1.0"
+edition = "2021"
+description = "ssh cwd.dev — a read-only faux shell for browsing the working directory"
+
+[[bin]]
+name = "cwd"
+path = "src/main.rs"
+
+[features]
+# Core engine + `local` stdio demo build with zero deps.
+# The SSH transport is opt-in so the engine stays fast to build and test.
+default = []
+ssh = ["dep:russh", "dep:russh-keys", "dep:tokio", "dep:async-trait", "dep:anyhow", "dep:rand"]
+
+[dependencies]
+russh = { version = "0.45", optional = true }
+russh-keys = { version = "0.45", optional = true }
+tokio = { version = "1", features = ["full"], optional = true }
+async-trait = { version = "0.1", optional = true }
+anyhow = { version = "1", optional = true }
+rand = { version = "0.8", optional = true }
+
+[profile.release]
+strip = true
+lto = true

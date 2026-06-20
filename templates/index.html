@@ -1,87 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>cwd</title>
-<meta name="description" content="cwd — the home directory for everything I make.">
-<link rel="icon" href="/assets/favicon.svg">
-<style>
-  @font-face{font-family:'Newsreader';font-style:normal;font-weight:400;font-display:swap;src:url('/assets/fonts/newsreader-400.woff2') format('woff2')}
-  @font-face{font-family:'Newsreader';font-style:normal;font-weight:500;font-display:swap;src:url('/assets/fonts/newsreader-500.woff2') format('woff2')}
-  @font-face{font-family:'Newsreader';font-style:italic;font-weight:400;font-display:swap;src:url('/assets/fonts/newsreader-italic-400.woff2') format('woff2')}
-  @font-face{font-family:'Space Mono';font-style:normal;font-weight:400;font-display:swap;src:url('/assets/fonts/spacemono-400.woff2') format('woff2')}
-  @font-face{font-family:'Space Mono';font-style:normal;font-weight:700;font-display:swap;src:url('/assets/fonts/spacemono-700.woff2') format('woff2')}
-
-  :root{
-    --paper:#EDEAE3; --ink:#1A1714; --muted:#6B655C; --line-2:#C4BDAF;
-    --blue:#1E22E6; --art:rgba(26,23,20,.13);
-    --serif:'Newsreader',Georgia,serif;
-    --mono:'Space Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
-  }
-  @media (prefers-color-scheme:dark){:root{
-    --paper:#0C0E17; --ink:#E7E8EE; --muted:#888EA0; --line-2:rgba(231,234,242,.2);
-    --blue:#8e97ff; --art:rgba(150,165,255,.14);
-  }}
-  *{box-sizing:border-box}
-  html:not(.fonts-ready) body{opacity:0}
-  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);
-    -webkit-font-smoothing:antialiased}
-  ::selection{background:var(--blue);color:var(--paper)}
-  a{color:inherit}
-
-  .bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
-  .bg path{fill:none;stroke:var(--art);stroke-width:1;vector-effect:non-scaling-stroke}
-  .bg rect,.bg circle{fill:var(--art)}
-
-  .page{position:relative;z-index:1;min-height:100vh;max-width:760px;margin:0 auto;
-    display:flex;flex-direction:column;padding:clamp(28px,5vw,44px) clamp(24px,6vw,52px)}
-
-  .mark{font-family:var(--mono);font-weight:700;font-size:18px;letter-spacing:-.03em;display:inline-flex;align-items:baseline}
-  .mark .cur{display:inline-block;width:.42em;height:.96em;background:var(--blue);transform:translateY(.1em);margin-left:2px}
-  header{display:flex;align-items:baseline;gap:12px}
-  .env{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--blue);text-transform:lowercase}
-
-  main{flex:1;display:flex;flex-direction:column;justify-content:center;padding:48px 0}
-  .prose{max-width:32em;font-size:clamp(19px,2.3vw,23px);line-height:1.5;font-weight:400}
-  .prose p{margin:0 0 1.15em}
-  .prose p:last-child{margin:0}
-  .prose .it{font-style:italic}
-  .prose .dim{color:var(--muted)}
-  a.l{color:var(--blue);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--blue) 40%,transparent);transition:border-color .15s}
-  a.l:hover{border-bottom-color:var(--blue)}
-
-  footer{font-family:var(--mono);font-size:12.5px;color:var(--muted);letter-spacing:.02em;
-    display:flex;justify-content:space-between;align-items:baseline;gap:18px;flex-wrap:wrap}
-  footer .who b{color:var(--ink);font-weight:700}
-  footer a:hover{color:var(--blue)}
-
-  @media(max-width:560px){footer{flex-direction:column;gap:10px}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>cwd</title>
+  <meta name="description" content="cwd — the home directory for everything I make.">
+  <link rel="icon" href="/assets/favicon.svg">
+  <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
-<svg class="bg" id="bg" preserveAspectRatio="none" aria-hidden="true"></svg>
+  <svg class="bg" id="bg" preserveAspectRatio="none" aria-hidden="true"></svg>
 
-<div class="page">
-  <header>
-    <span class="mark">cwd<span class="cur"></span></span>
-    {% if env != "production" %}<span class="env">[{{ env }}]</span>{% endif %}
-  </header>
+  <div class="page">
+    <header>
+      <span class="mark">cwd<span class="cur"></span></span>
+      {% if env != "production" %}<span class="env">[{{ env }}]</span>{% endif %}
+    </header>
 
-  <main>
-    <div class="prose">
-      <p><b>cwd</b> — short for <span class="it">current working directory</span> — is where everything I make ends up. Right now that's <a class="l" href="#">helio</a>, a weather app I want to feel calmer than the rest, with a notes engine (<a class="l" href="#">mossy</a>), a plain-text finance CLI (<a class="l" href="#">ledger</a>), and a couple of experiments — <a class="l" href="#">drift</a>, <a class="l" href="#">postbox</a> — in various states of done.</p>
-      <p>Most start as a folder and a vague idea. A few grow into something real; the rest just sit here, which is sort of the point — they all land in the same directory either way. I keep notes on the mess in <a class="l" href="#">field-notes</a>.</p>
-      <p class="dim">cwd is the personal labs of <a class="l" href="{{ x_url }}">@kierandrewett</a>. Also on <a class="l" href="{{ github_url }}">GitHub</a>, or <a class="l" href="mailto:{{ email }}">say hello</a>.</p>
-    </div>
-  </main>
+    <main>
+      <div class="prose">{{ body|safe }}</div>
+    </main>
 
-  <footer>
-    <span class="who"><b>Working Directory Ltd</b> · trading as cwd</span>
-    <a href="https://{{ domain }}">{{ domain }}</a>
-  </footer>
-</div>
+    <footer>
+      <span class="who"><b>Working Directory Ltd</b> · trading as cwd</span>
+      <a href="https://cwd.dev">cwd.dev</a>
+    </footer>
+  </div>
 
-<script src="/assets/bg.js" defer></script>
+  <script src="/assets/bg.js" defer></script>
 </body>
 </html>

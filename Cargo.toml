@@ -17,6 +17,8 @@ ssh = ["dep:russh", "dep:russh-keys", "dep:tokio", "dep:async-trait", "dep:anyho
 [dependencies]
 # Compile-time HTML templating for the website (templates/index.html).
 askama = "0.12"
+# Markdown to HTML for the website prose (content/*.md).
+pulldown-cmark = { version = "0.13", default-features = false, features = ["html"] }
 
 russh = { version = "0.45", optional = true }
 russh-keys = { version = "0.45", optional = true }

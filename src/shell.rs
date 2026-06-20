@@ -73,7 +73,7 @@ impl Shell {
   {BLUE}./{RESET} {BOLD}cwd{RESET} {MUTED}— current working directory{RESET}{}
 
   the home directory for everything i make.
-  {MUTED}a read-only shell — nothing here can be changed, nothing's watching.{RESET}
+  {MUTED}read-only. the website and this shell are the same program.{RESET}
 
   {BLUE}ls{RESET} list   {BLUE}cd{RESET} enter   {BLUE}cat{RESET} read   {BLUE}tree{RESET} map   {BLUE}open{RESET} on github   {BLUE}help{RESET} more
 

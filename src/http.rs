@@ -62,7 +62,7 @@ fn handle(mut stream: TcpStream) -> std::io::Result<()> {
 fn terminal_page() -> String {
     let sh = Shell::new();
     format!(
-        "{}\n  you're reading the terminal edition. for the real thing, drop in:\n\n      \x1b[38;2;124;134;255mssh cwd.dev\x1b[0m\n\n",
+        "{}\n  for the full shell:\n\n      \x1b[38;2;124;134;255mssh cwd.dev\x1b[0m\n\n",
         sh.motd()
     )
 }

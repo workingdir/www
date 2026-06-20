@@ -96,7 +96,9 @@ pub fn root() -> Node {
         (
             "site",
             dir(vec![
+                ("index.md", file(crate::site::INDEX_MD)),
                 ("index.html", file(crate::site::index_html())),
+                ("style.css", file(crate::site::STYLE_CSS)),
                 ("bg.js", file(crate::site::BG_JS)),
                 ("favicon.svg", file(crate::site::FAVICON)),
                 ("README.md", file(SITE_README)),
@@ -113,27 +115,26 @@ pub fn root() -> Node {
 const ROOT_README: &str = "\
 cwd — current working directory
 
-You're in a read-only copy of everything I make. Poke around.
+A read-only view of what I'm working on. The page you'd get in a browser and
+this shell are the same program.
 
-  ls                   list what's here
-  cd projects          step into the work
-  cat site/index.html  the source of this very page
-  clone www            git clone a project over ssh
-  tree                 see the whole thing
-  help                 everything else
-
-Yes, the website is in here too — this shell and that site are one program.
-Nothing here can be changed, and nothing's watching. Enjoy.
+  ls                   list this directory
+  cd projects          the repositories
+  cat site/index.html  the page cwd.dev serves
+  clone <name>         git clone a project over ssh
+  tree                 the whole tree
+  help                 all commands
 ";
 
 const SITE_README: &str = "\
 # site
 
-The source of cwd.dev. The same binary that's running this shell also serves
-`index.html` over HTTP — `cat index.html` and you're reading the website.
+The source of cwd.dev. The same binary serving this shell serves these files
+over HTTP. `index.md` is the prose; `index.html` is what it renders to.
 
-  curl cwd.dev   the terminal edition
-  ssh cwd.dev    you're soaking in it
+  cat index.md   the source for the homepage copy
+  curl cwd.dev   the page as plain text
+  ssh cwd.dev    this shell
 ";
 
 const ABOUT: &str = "\

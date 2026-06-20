@@ -1,133 +1,99 @@
-# www · cwd.dev
+# www
 
-> **Repo split.** This repo (`workingdir/www`) owns the app source only.
-> Production and staging state, servers, DNS, NixOS, Traefik and deploys live in
-> [`workingdir/infrastructure`](https://github.com/workingdir/infrastructure),
-> which pins an exact commit of this repo and builds it. `main` here does not
-> deploy production. A green push dispatches a *staging* promotion in the
-> infrastructure repo (see [Deployment](#deployment)).
-
-One Rust binary that is the whole of **cwd.dev**. It serves the website over HTTP
-and an interactive, read-only faux shell over SSH, both reading the same virtual
-filesystem.
+The source for [cwd.dev](https://cwd.dev). One Rust binary that serves the
+website over HTTP and a read-only shell over SSH, both backed by the same tree of
+my public repos.
 
 ```
-ssh cwd.dev                            # a read-only shell of all the projects
-curl cwd.dev                           # the same thing, as text, in your terminal
-git clone ssh://cwd.dev/projects/helio # clone any project, read-only
-open https://cwd.dev                   # the designed website
+ssh cwd.dev                              # browse the projects in a shell
+curl cwd.dev                             # the same intro, as text
+git clone ssh://cwd.dev/projects/<name>  # clone any project, read-only
 ```
 
-Each project under `projects/` is materialised as a real git repo on startup
-(`repos/`, override `CWD_REPOS`), and `git-upload-pack` is bridged to the system
-`git`. Pushes (`receive-pack`) are refused; it is a mirror. Needs `git` on the host.
+This repo holds the app only. Servers, DNS, NixOS, Traefik and deploys live in
+[workingdir/infrastructure](https://github.com/workingdir/infrastructure), which
+pins a specific commit of this repo and builds it. A green push to `main` here
+dispatches a staging promotion there; production is a separate merge. See
+[Deployment](#deployment).
 
 ## How it works
 
-```
-            ┌──────────────── cwd (one binary) ────────────────┐
-  :80/:443  │  http.rs   browser  -> HTML site                 │
-            │            curl/wget -> plain-text shell intro    │
-   :22      │  ssh.rs    interactive faux shell (russh)         │
-            │              │                                    │
-            │              └── shell.rs ── vfs.rs (read-only) ──┤
-            └──────────────────────────────────────────────────┘
-```
+A background task lists the public repos under
+[github.com/workingdir](https://github.com/workingdir) and mirrors each one with
+`git clone --mirror` into `repos/` (override with `CWD_REPOS`). The shell builds
+`projects/<name>` from each repo's file tree, read from the GitHub API, and pulls
+file contents from the mirror the first time you `cat` one. `git-upload-pack` is
+bridged to the system `git` so clones work; pushes are refused.
 
-- **`vfs.rs`**: a read-only tree. Seeded from a manifest today; in production it
-  gets rebuilt from the `github.com/workingdir` repos (default branch) on a timer.
-  The shell never knows the difference.
-- **`shell.rs`**: command logic over the VFS (`ls cd pwd cat tree open ...`),
-  shared by SSH and the local demo. Unit-tested, no I/O.
-- **`http.rs`** / **`site.rs`**: minimal HTTP/1.1. It content-negotiates, so
-  browsers get the website and terminal clients get the shell intro. The page is
-  `templates/index.html` rendered with askama (compile-time templating); the
-  background script and the fonts live in `assets/` (no Google Fonts, no CDN) and
-  are embedded in the binary and served from `/assets/`.
-- **`ssh.rs`**: russh server, anonymous auth, and a readline-style line editor
-  (history with the arrow keys, cursor movement, Ctrl-A/E/U/W/L/C/D). It also
-  handles one-shot `ssh cwd.dev "ls projects"`.
+The pieces:
+
+- `vfs.rs`: the read-only tree. `projects/` comes from the mirrors; the rest is static.
+- `shell.rs`: the command logic (`ls`, `cd`, `cat`, `tree`, `open`, `clone`, ...). No I/O, unit-tested.
+- `http.rs` / `site.rs`: a small HTTP/1.1 server. It content-negotiates, so browsers get the site and curl gets the intro as text. The page is `templates/index.html` (askama), prose lives in `content/index.md`, and the fonts and background script in `assets/` are embedded in the binary.
+- `ssh.rs`: the russh server. Anonymous auth and a readline-style line editor (history, cursor keys, Ctrl-A/E/U/W/L/C/D). It also runs one-shots like `ssh cwd.dev "ls projects"`.
 
 ## Run
 
 ```bash
-# website only (no SSH deps, instant build)
-cargo run -- web                      # http://0.0.0.0:4280
-
-# the faux shell over your own terminal (for development)
-cargo run -- local
-
-# the real thing: website + SSH together
-cargo run --features ssh -- serve     # CWD_HTTP / CWD_SSH override the addresses
+cargo run -- web                   # website only, no SSH deps
+cargo run -- local                 # the shell over your terminal, for dev
+cargo run --features ssh -- serve  # website + SSH together
+cargo test --features ssh          # shell engine tests
 ```
 
-Then:
+Against a running `serve`:
 
 ```bash
-ssh -p 4242 guest@127.0.0.1                 # interactive
-ssh -p 4242 guest@127.0.0.1 "tree"          # one-shot
-curl 127.0.0.1:4280                         # terminal edition
-```
-
-```bash
-cargo test --features ssh                   # shell engine tests
+ssh -p 4242 guest@127.0.0.1            # interactive
+ssh -p 4242 guest@127.0.0.1 "tree"     # one-shot
+curl 127.0.0.1:4280                    # text edition
 ```
 
 ## Configuration
 
-Env vars only, no config files, so the same binary runs as both production and
-staging on one host:
+Env vars only, so one binary runs as both production and staging:
 
-| Var           | Default            | Meaning                                            |
-| ------------- | ------------------ | -------------------------------------------------- |
-| `CWD_HTTP`    | `0.0.0.0:4280`     | HTTP bind address (sits behind Traefik in prod)    |
-| `CWD_SSH`     | `0.0.0.0:4242`     | SSH bind address (`:22` prod, `:2222` staging)     |
-| `CWD_ENV`     | `production`       | environment name; non-prod shows a `[staging]` tag |
-| `CWD_HOSTKEY` | `cwd_host_ed25519` | persistent ed25519 host key path                   |
-| `CWD_REPOS`   | `repos`            | where per-project git repos are materialised       |
+| Var | Default | Meaning |
+| --- | --- | --- |
+| `CWD_HTTP` | `0.0.0.0:4280` | HTTP bind address (behind Traefik in prod) |
+| `CWD_SSH` | `0.0.0.0:4242` | SSH bind address (`:22` prod, `:2222` staging) |
+| `CWD_ENV` | `production` | environment name; non-prod shows a `[staging]` tag |
+| `CWD_HOSTKEY` | `cwd_host_ed25519` | ed25519 host key path |
+| `CWD_REPOS` | `repos` | where the repo mirrors are kept |
+| `CWD_ORG` | `workingdir` | GitHub org to mirror |
+| `CWD_GITHUB_TOKEN` | (unset) | optional; raises the GitHub rate limit |
+| `CWD_SYNC_INTERVAL` | `900` | seconds between syncs |
 
 Modes: `cwd web` (HTTP only), `cwd serve` (HTTP + SSH, needs `--features ssh`),
-`cwd local` (faux shell over stdio, for dev).
+`cwd local` (shell over stdio, for dev).
 
 ## Docker
 
-The whole site, fonts and scripts included, is embedded in the binary, so the
-image is just the binary plus `git`:
+The whole site is in the binary, so the image is the binary plus `git`:
 
 ```bash
 docker build -t cwd .
 docker run --rm -p 8080:8080 -p 2222:2222 -v cwd-data:/data cwd
-# website at http://localhost:8080, ssh at: ssh -p 2222 localhost
 ```
 
-Override `CWD_HTTP`, `CWD_SSH`, `CWD_ENV` with `-e`. State (the host key and the
-materialised repos) lives in the `/data` volume.
+The `/data` volume holds the host key and the mirrors. Override `CWD_HTTP`,
+`CWD_SSH`, `CWD_ENV` with `-e`.
 
 ## Deployment
 
-CI (`.github/workflows/ci.yml`) runs fmt, clippy, test, `cargo build --release
---features ssh`, and a Docker image build on every PR and push. On a green push to
-`main` it dispatches
-`promote-www-to-staging.yml` in `workingdir/infrastructure` with this exact SHA.
-That promotion lands on `infrastructure:staging` and deploys staging. Production
-is a deliberate merge from `infrastructure:staging` to `infrastructure:production`.
-The infrastructure README has the full flow and rollback steps.
+CI runs fmt, clippy, test, a release build and a Docker build on every PR and
+push. A green push to `main` dispatches `promote-www-to-staging.yml` in
+`workingdir/infrastructure` with the exact SHA, which deploys staging. Production
+is a merge from `infrastructure:staging` to `infrastructure:production`. The
+infrastructure README has the full flow.
 
-One GitHub secret is needed here: `INFRASTRUCTURE_DEPLOY_TOKEN`, a fine-grained
-PAT (or GitHub App token) with Actions: write on `workingdir/infrastructure` and
-nothing else.
+One secret is needed here: `INFRASTRUCTURE_DEPLOY_TOKEN`, a fine-grained PAT with
+Actions: write on `workingdir/infrastructure`.
 
-## Notes for production
+## Notes
 
-- **Read-only and anonymous by design.** There is no write path and any auth is
-  accepted (it is a public box). Keep it that way; never mount real disk.
-- **Host key.** A persistent ed25519 key is generated on first run and saved to
-  `cwd_host_ed25519` (override with `CWD_HOSTKEY`), so clients do not see
-  "REMOTE HOST IDENTIFICATION HAS CHANGED" across restarts. Keep it safe and out
-  of git (it is `.gitignore`d).
-- **Ports.** Binding `:80`/`:443`/`:22` needs `CAP_NET_BIND_SERVICE` or a proxy.
-  In production Traefik terminates TLS and the binary owns `:22` directly.
-- **GitHub sync.** `vfs::sync()` is still a TODO: clone/pull the `workingdir`
-  repos into the tree on an interval, swapped behind an `ArcSwap` so sessions read
-  a consistent snapshot.
-- **Hardening.** Connection and rate limits, per-session timeouts, output caps.
+- Read-only and anonymous. Any SSH auth is accepted and there is no write path.
+  It is a public box, so keep it that way.
+- The host key is generated on first run and saved to `CWD_HOSTKEY`, so clients
+  do not get a changed-host-key warning across restarts. It is gitignored.
+- Binding `:80`, `:443` or `:22` needs `CAP_NET_BIND_SERVICE` or a proxy in front.

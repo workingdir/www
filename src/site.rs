@@ -17,18 +17,15 @@ struct Index {
 /// The homepage prose, edited as markdown.
 pub const INDEX_MD: &str = include_str!("../content/index.md");
 
-/// Markdown to HTML. External links open in a new tab; in-page anchors and
-/// mailto: links are left alone.
+/// Markdown to HTML. Off-site links are sent to a new tab on the client by
+/// `assets/bg.js`, so nothing special happens here.
 fn render_markdown(md: &str) -> String {
     let mut opts = Options::empty();
     opts.insert(Options::ENABLE_STRIKETHROUGH);
     let parser = Parser::new_ext(md, opts);
     let mut out = String::new();
     html::push_html(&mut out, parser);
-    out.replace(
-        "<a href=\"http",
-        "<a target=\"_blank\" rel=\"noreferrer\" href=\"http",
-    )
+    out
 }
 
 /// The rendered homepage. Rendered once on first use, then handed out as a

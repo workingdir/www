@@ -1,8 +1,8 @@
 [package]
 name = "cwd-ssh"
 version = "0.1.0"
-edition = "2021"
-description = "ssh cwd.dev — a read-only faux shell for browsing the working directory"
+edition = "2024"
+description = "cwd.dev: the website over HTTP and a read-only shell over SSH, from one binary"
 
 [[bin]]
 name = "cwd"

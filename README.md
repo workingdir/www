@@ -10,12 +10,6 @@ curl cwd.dev                             # the same intro, as text
 git clone ssh://cwd.dev/projects/<name>  # clone any project, read-only
 ```
 
-This repo holds the app only. Servers, DNS, NixOS, Traefik and deploys live in
-[workingdir/infrastructure](https://github.com/workingdir/infrastructure), which
-pins a specific commit of this repo and builds it. A green push to `main` here
-dispatches a staging promotion there; production is a separate merge. See
-[Deployment](#deployment).
-
 ## How it works
 
 A background task lists the public repos under
@@ -55,7 +49,7 @@ Env vars only, so one binary runs as both production and staging:
 
 | Var | Default | Meaning |
 | --- | --- | --- |
-| `CWD_HTTP` | `0.0.0.0:4280` | HTTP bind address (behind Traefik in prod) |
+| `CWD_HTTP` | `0.0.0.0:4280` | HTTP bind address (behind a reverse proxy in prod) |
 | `CWD_SSH` | `0.0.0.0:4242` | SSH bind address (`:22` prod, `:2222` staging) |
 | `CWD_ENV` | `production` | environment name; non-prod shows a `[staging]` tag |
 | `CWD_HOSTKEY` | `cwd_host_ed25519` | ed25519 host key path |
@@ -78,17 +72,6 @@ docker run --rm -p 8080:8080 -p 2222:2222 -v cwd-data:/data cwd
 
 The `/data` volume holds the host key and the mirrors. Override `CWD_HTTP`,
 `CWD_SSH`, `CWD_ENV` with `-e`.
-
-## Deployment
-
-CI runs fmt, clippy, test, a release build and a Docker build on every PR and
-push. A green push to `main` dispatches `promote-www-to-staging.yml` in
-`workingdir/infrastructure` with the exact SHA, which deploys staging. Production
-is a merge from `infrastructure:staging` to `infrastructure:production`. The
-infrastructure README has the full flow.
-
-One secret is needed here: `INFRASTRUCTURE_DEPLOY_TOKEN`, a fine-grained PAT with
-Actions: write on `workingdir/infrastructure`.
 
 ## Notes
 

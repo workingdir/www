@@ -10,7 +10,14 @@ use std::collections::BTreeMap;
 #[derive(Clone)]
 pub enum Node {
     Dir(BTreeMap<String, Node>),
+    /// Inline content, known at build time (site files, synthetic READMEs).
     File(String),
+    /// A file in a mirrored repo. Its contents are read on demand from the
+    /// local mirror (see [`crate::sync::blob`]); only the path is held here.
+    Blob {
+        repo: String,
+        path: String,
+    },
 }
 
 impl Node {
@@ -59,8 +66,9 @@ fn file(s: &str) -> Node {
     Node::File(s.to_string())
 }
 
-/// The projects directory, built from the live mirror snapshot. Each repo lists
-/// as a folder with a short README; the real contents come from cloning it.
+/// The projects directory, built from the sync snapshot. Each repo is a folder
+/// whose tree mirrors the real repository (file listing from the GitHub API);
+/// file contents are read lazily from the local mirror when `cat`-ed.
 fn projects_node() -> Node {
     let repos = crate::sync::current();
     if repos.is_empty() {
@@ -70,21 +78,62 @@ fn projects_node() -> Node {
         )]);
     }
     let mut m = BTreeMap::new();
-    for r in repos {
+    for r in &repos {
+        m.insert(r.name.clone(), repo_node(r));
+    }
+    Node::Dir(m)
+}
+
+/// One repository as a directory tree. Falls back to a short README if the file
+/// list hasn't been fetched yet (e.g. the very first sync is still running).
+fn repo_node(r: &crate::sync::Repo) -> Node {
+    if r.tree.is_empty() {
         let desc = if r.description.is_empty() {
-            "(no description)".to_string()
+            "(no description)"
         } else {
-            r.description.clone()
+            &r.description
         };
         let readme = format!(
             "# {name}\n\n{desc}\n\ngit clone ssh://cwd.dev/projects/{name}\n",
             name = r.name
         );
-        let mut inner = BTreeMap::new();
-        inner.insert("README.md".to_string(), file(&readme));
-        m.insert(r.name.clone(), Node::Dir(inner));
+        return dir(vec![("README.md", file(&readme))]);
     }
-    Node::Dir(m)
+    let mut root = BTreeMap::new();
+    for path in &r.tree {
+        insert_path(&mut root, &r.name, path);
+    }
+    Node::Dir(root)
+}
+
+/// Insert one file path into a tree, creating intermediate directories. The leaf
+/// becomes a [`Node::Blob`] carrying the repo name and full path it reads from.
+fn insert_path(root: &mut BTreeMap<String, Node>, repo: &str, path: &str) {
+    let segs: Vec<&str> = path.split('/').collect();
+    let mut cur = root;
+    for (i, seg) in segs.iter().enumerate() {
+        if i + 1 == segs.len() {
+            cur.insert(
+                (*seg).to_string(),
+                Node::Blob {
+                    repo: repo.to_string(),
+                    path: path.to_string(),
+                },
+            );
+        } else {
+            let entry = cur
+                .entry((*seg).to_string())
+                .or_insert_with(|| Node::Dir(BTreeMap::new()));
+            // A file and a directory can't share a name; the directory wins.
+            if !entry.is_dir() {
+                *entry = Node::Dir(BTreeMap::new());
+            }
+            cur = match entry {
+                Node::Dir(m) => m,
+                _ => unreachable!(),
+            };
+        }
+    }
 }
 
 pub fn root() -> Node {

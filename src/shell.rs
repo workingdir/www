@@ -73,7 +73,6 @@ impl Shell {
   {BLUE}./{RESET} {BOLD}cwd{RESET} {MUTED}— current working directory{RESET}{}
 
   the home directory for everything i make.
-  {MUTED}read-only. the website and this shell are the same program.{RESET}
 
   {BLUE}ls{RESET} list   {BLUE}cd{RESET} enter   {BLUE}cat{RESET} read   {BLUE}tree{RESET} map   {BLUE}open{RESET} on github   {BLUE}help{RESET} more
 
@@ -207,7 +206,7 @@ impl Shell {
             self.resolve(patharg)
         };
         match self.root.resolve(&path) {
-            Some(node @ Node::Dir(_)) => {
+            Some(node) if node.is_dir() => {
                 let items: Vec<String> = node
                     .entries()
                     .into_iter()
@@ -226,7 +225,7 @@ impl Shell {
                     Output::text(format!("{}\n", items.join("   ")))
                 }
             }
-            Some(Node::File(_)) => Output::text(format!("{patharg}\n")),
+            Some(_) => Output::text(format!("{patharg}\n")),
             None => Output::text(format!("ls: {patharg}: no such directory\n")),
         }
     }
@@ -242,7 +241,7 @@ impl Shell {
                 self.cwd = path;
                 Output::text(String::new())
             }
-            Some(Node::File(_)) => Output::text(format!("cd: {}: not a directory\n", arg)),
+            Some(_) => Output::text(format!("cd: {}: not a directory\n", arg)),
             None => Output::text(format!("cd: {}: no such directory\n", arg)),
         }
     }
@@ -260,6 +259,15 @@ impl Shell {
                 }
                 Output::text(c)
             }
+            Some(Node::Blob { repo, path: p }) => match crate::sync::blob(repo, p) {
+                Some(mut c) => {
+                    if !c.ends_with('\n') {
+                        c.push('\n');
+                    }
+                    Output::text(c)
+                }
+                None => Output::text(format!("cat: {}: could not read\n", arg)),
+            },
             Some(Node::Dir(_)) => Output::text(format!("cat: {}: is a directory\n", arg)),
             None => Output::text(format!("cat: {}: no such file\n", arg)),
         }

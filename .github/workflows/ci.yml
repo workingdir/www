@@ -39,9 +39,17 @@ jobs:
       - name: Release build
         run: cargo build --release --features ssh
 
+  image:
+    name: docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t cwd:ci .
+
   promote-to-staging:
     name: promote → infrastructure:staging
-    needs: check
+    needs: [check, image]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:

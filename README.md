@@ -89,25 +89,25 @@ staging on one host:
 Modes: `cwd web` (HTTP only), `cwd serve` (HTTP + SSH, needs `--features ssh`),
 `cwd local` (faux shell over stdio, for dev).
 
-## Nix
+## Docker
 
-The repo is a flake. The infrastructure repo builds the binary from a pinned
-revision of this one:
+The whole site, fonts and scripts included, is embedded in the binary, so the
+image is just the binary plus `git`:
 
 ```bash
-nix build            # -> ./result/bin/cwd (built with the ssh feature, git on PATH)
-nix flake check      # builds the binary as a check
-nix develop          # cargo/rustc/clippy/git dev shell
+docker build -t cwd .
+docker run --rm -p 8080:8080 -p 2222:2222 -v cwd-data:/data cwd
+# website at http://localhost:8080, ssh at: ssh -p 2222 localhost
 ```
 
-`buildRustPackage` reads `cargoLock.lockFile`, so builds are reproducible without
-a vendored hash. `git` is wrapped onto the binary's `PATH` so the git-over-SSH
-bridge works whatever the service environment looks like.
+Override `CWD_HTTP`, `CWD_SSH`, `CWD_ENV` with `-e`. State (the host key and the
+materialised repos) lives in the `/data` volume.
 
 ## Deployment
 
-CI (`.github/workflows/ci.yml`) runs fmt, clippy, test and `cargo build --release
---features ssh` on every PR and push. On a green push to `main` it dispatches
+CI (`.github/workflows/ci.yml`) runs fmt, clippy, test, `cargo build --release
+--features ssh`, and a Docker image build on every PR and push. On a green push to
+`main` it dispatches
 `promote-www-to-staging.yml` in `workingdir/infrastructure` with this exact SHA.
 That promotion lands on `infrastructure:staging` and deploys staging. Production
 is a deliberate merge from `infrastructure:staging` to `infrastructure:production`.

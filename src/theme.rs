@@ -2,12 +2,9 @@
 
 pub const RESET: &str = "\x1b[0m";
 pub const BOLD: &str = "\x1b[1m";
-pub const DIM: &str = "\x1b[2m";
 
 // Electric blue, lifted for legibility on a dark terminal (the brand's dark-mode accent).
 pub const BLUE: &str = "\x1b[38;2;124;134;255m";
-// Warm off-white "paper".
-pub const PAPER: &str = "\x1b[38;2;233;227;215m";
 // Muted warm grey.
 pub const MUTED: &str = "\x1b[38;2;142;135;122m";
 
@@ -18,7 +15,4 @@ pub fn blue(s: &str) -> String {
 }
 pub fn muted(s: &str) -> String {
     format!("{MUTED}{s}{RESET}")
-}
-pub fn bold(s: &str) -> String {
-    format!("{BOLD}{s}{RESET}")
 }

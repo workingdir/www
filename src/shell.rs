@@ -120,6 +120,8 @@ impl Shell {
 
     /// Tab-completion candidates for the last token of `line`, plus the byte
     /// offset where that token begins (so the caller can splice in a choice).
+    /// Only the SSH line editor uses this.
+    #[cfg(feature = "ssh")]
     pub fn complete(&self, line: &str) -> (Vec<String>, usize) {
         let start = line.rfind(char::is_whitespace).map(|i| i + 1).unwrap_or(0);
         let token = &line[start..];
@@ -369,12 +371,12 @@ mod tests {
 
     #[test]
     fn navigates_and_reads() {
-        // Uses the static site/ tree, which does not depend on a repo sync.
+        // Offline, projects/ is the empty-fallback dir with a README.
         let mut sh = Shell::new();
-        sh.exec("cd site");
-        assert!(strip(&sh.exec("ls").out).contains("index.html"));
-        assert_eq!(strip(&sh.prompt()).trim(), "~/cwd/site $");
-        assert!(strip(&sh.exec("cat README.md").out).contains("site"));
+        sh.exec("cd projects");
+        assert_eq!(strip(&sh.prompt()).trim(), "~/cwd/projects $");
+        assert!(strip(&sh.exec("ls").out).contains("README.md"));
+        assert!(strip(&sh.exec("cat README.md").out).contains("repos"));
         sh.exec("cd ..");
         assert_eq!(strip(&sh.prompt()).trim(), "~/cwd $");
     }

@@ -55,4 +55,9 @@
   const reveal = () => document.documentElement.classList.add("fonts-ready");
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(reveal);
   setTimeout(reveal, 800);
+
+  // For anyone poking around in the console: there's a shell in here.
+  const mono = "ui-monospace,SFMono-Regular,Menlo,monospace";
+  console.log("%c$ ssh cwd.dev", `color:#1E22E6;font:600 13px/1.7 ${mono}`);
+  console.log("%cthe same site, as a shell.", `color:#6B655C;font:12px ${mono}`);
 })();

@@ -137,22 +137,9 @@ fn insert_path(root: &mut BTreeMap<String, Node>, repo: &str, path: &str) {
 }
 
 pub fn root() -> Node {
-    // The website's own source: the same rendered HTML and assets this binary
-    // serves over HTTP, so `cat site/index.html` shows what the browser gets.
     let mut r = dir(vec![
         ("README.md", file(ROOT_README)),
         ("about.md", file(ABOUT)),
-        (
-            "site",
-            dir(vec![
-                ("index.md", file(crate::site::INDEX_MD)),
-                ("index.html", file(crate::site::index_html())),
-                ("style.css", file(crate::site::STYLE_CSS)),
-                ("bg.js", file(crate::site::BG_JS)),
-                ("favicon.svg", file(crate::site::FAVICON)),
-                ("README.md", file(SITE_README)),
-            ]),
-        ),
         ("projects", projects_node()),
     ]);
     if let Node::Dir(m) = &mut r {
@@ -164,26 +151,15 @@ pub fn root() -> Node {
 const ROOT_README: &str = "\
 cwd — current working directory
 
-A read-only view of what I'm working on. The page you'd get in a browser and
-this shell are the same program.
+A read-only view of what I'm working on. Browse the repositories under
+projects/; cat any file to read it.
 
-  ls                   list this directory
-  cd projects          the repositories
-  cat site/index.html  the page cwd.dev serves
-  clone <name>         git clone a project over ssh
-  tree                 the whole tree
-  help                 all commands
-";
-
-const SITE_README: &str = "\
-# site
-
-The source of cwd.dev. The same binary serving this shell serves these files
-over HTTP. `index.md` is the prose; `index.html` is what it renders to.
-
-  cat index.md   the source for the homepage copy
-  curl cwd.dev   the page as plain text
-  ssh cwd.dev    this shell
+  ls                list this directory
+  cd projects       the repositories
+  cat <file>        read a file
+  clone <name>      git clone a project over ssh
+  tree              the whole tree
+  help              all commands
 ";
 
 const ABOUT: &str = "\

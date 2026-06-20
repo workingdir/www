@@ -1,9 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="cwd">
-  <!-- Favicon — "./" : Unix for the current directory. Real Space Mono "/" outline
-       (flat-cut terminals) + round period, gutter-separated so it reads as "./" at 16px. -->
+  <!-- The cwd mark: "./" — Unix for "the current directory". A blue prompt dot
+       and a paper slash with flat-cut terminals (Space Mono), on an ink chip.
+       Drawn on the 32 grid so it stays crisp down to 16px. -->
   <rect width="32" height="32" rx="7" fill="#1A1714"/>
-  <g transform="translate(0.34,24.49) scale(0.02425,-0.02425)">
-    <circle cx="306" cy="81" r="110" fill="#1E22E6"/>
-    <g transform="translate(520,0)"><path d="M186.4 -125 36.9 -89 426.9 825 575.1 789Z" fill="#EDEAE3"/></g>
-  </g>
+  <circle cx="10" cy="20.5" r="3.3" fill="#1E22E6"/>
+  <path d="M20 8.5 25.5 8.5 19.5 23.5 14 23.5 Z" fill="#EDEAE3"/>
 </svg>

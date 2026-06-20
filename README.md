@@ -3,8 +3,8 @@
 > **Repo split.** This repo (`workingdir/www`) owns the app source only.
 > Production and staging state, servers, DNS, NixOS, Traefik and deploys live in
 > [`workingdir/infrastructure`](https://github.com/workingdir/infrastructure),
-> which pins an exact commit of this repo as a Nix flake input. `main` here does
-> not deploy production. A green push dispatches a *staging* promotion in the
+> which pins an exact commit of this repo and builds it. `main` here does not
+> deploy production. A green push dispatches a *staging* promotion in the
 > infrastructure repo (see [Deployment](#deployment)).
 
 One Rust binary that is the whole of **cwd.dev**. It serves the website over HTTP

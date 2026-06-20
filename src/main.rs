@@ -7,6 +7,7 @@ mod http;
 #[cfg(feature = "ssh")]
 mod repos;
 mod shell;
+mod site;
 #[cfg(feature = "ssh")]
 mod ssh;
 mod theme;

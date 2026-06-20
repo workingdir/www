@@ -3,11 +3,9 @@
 //! website is reachable from the command line too.
 
 use crate::shell::Shell;
+use crate::site;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
-
-const SITE: &str = include_str!("../site/index.html");
-const FAVICON: &str = include_str!("../site/favicon.svg");
 
 pub fn serve(addr: &str) {
     let listener = TcpListener::bind(addr).expect("http: bind failed");
@@ -36,8 +34,9 @@ fn handle(mut stream: TcpStream) -> std::io::Result<()> {
         }
     }
 
-    if path.starts_with("/favicon") {
-        return write_resp(&mut stream, "200 OK", "image/svg+xml", FAVICON.as_bytes());
+    // Static assets: the background script, the local fonts, the favicon.
+    if let Some((ctype, bytes)) = site::asset(path) {
+        return write_resp(&mut stream, "200 OK", ctype, bytes);
     }
 
     let is_terminal = ua.contains("curl") || ua.contains("wget") || ua.contains("httpie");
@@ -48,7 +47,7 @@ fn handle(mut stream: TcpStream) -> std::io::Result<()> {
             &mut stream,
             "200 OK",
             "text/html; charset=utf-8",
-            SITE.as_bytes(),
+            site::index_html().as_bytes(),
         )
     } else {
         write_resp(

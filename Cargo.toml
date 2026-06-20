@@ -9,12 +9,15 @@ name = "cwd"
 path = "src/main.rs"
 
 [features]
-# Core engine + `local` stdio demo build with zero deps.
-# The SSH transport is opt-in so the engine stays fast to build and test.
+# The website (HTTP) and `local` stdio shell build without the SSH transport.
+# SSH is opt-in so the engine stays fast to build and test.
 default = []
 ssh = ["dep:russh", "dep:russh-keys", "dep:tokio", "dep:async-trait", "dep:anyhow", "dep:rand"]
 
 [dependencies]
+# Compile-time HTML templating for the website (templates/index.html).
+askama = "0.12"
+
 russh = { version = "0.45", optional = true }
 russh-keys = { version = "0.45", optional = true }
 tokio = { version = "1", features = ["full"], optional = true }

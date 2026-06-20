@@ -39,8 +39,11 @@ Each project under `projects/` is materialised as a real git repo on startup
   The shell never knows the difference.
 - **`shell.rs`**: command logic over the VFS (`ls cd pwd cat tree open ...`),
   shared by SSH and the local demo. Unit-tested, no I/O.
-- **`http.rs`**: minimal HTTP/1.1 (std only). It content-negotiates, so browsers
-  get the embedded site and terminal clients get the shell intro.
+- **`http.rs`** / **`site.rs`**: minimal HTTP/1.1. It content-negotiates, so
+  browsers get the website and terminal clients get the shell intro. The page is
+  `templates/index.html` rendered with askama (compile-time templating); the
+  background script and the fonts live in `assets/` (no Google Fonts, no CDN) and
+  are embedded in the binary and served from `/assets/`.
 - **`ssh.rs`**: russh server, anonymous auth, and a readline-style line editor
   (history with the arrow keys, cursor movement, Ctrl-A/E/U/W/L/C/D). It also
   handles one-shot `ssh cwd.dev "ls projects"`.

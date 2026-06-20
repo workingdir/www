@@ -75,20 +75,18 @@ fn project(name: &str, kind: &str, year: &str, blurb: &str, readme: &str) -> Nod
     ])
 }
 
-// The website's own source: the *same* bytes this binary serves over HTTP,
-// so `cat site/index.html` in the shell shows exactly what the browser renders.
-const SITE_HTML: &str = include_str!("../site/index.html");
-const SITE_FAVICON: &str = include_str!("../site/favicon.svg");
-
 pub fn root() -> Node {
+    // The website's own source: the same rendered HTML and assets this binary
+    // serves over HTTP, so `cat site/index.html` shows what the browser gets.
     let mut r = dir(vec![
         ("README.md", file(ROOT_README)),
         ("about.md", file(ABOUT)),
         (
             "site",
             dir(vec![
-                ("index.html", file(SITE_HTML)),
-                ("favicon.svg", file(SITE_FAVICON)),
+                ("index.html", file(crate::site::index_html())),
+                ("bg.js", file(crate::site::BG_JS)),
+                ("favicon.svg", file(crate::site::FAVICON)),
                 ("README.md", file(SITE_README)),
             ]),
         ),

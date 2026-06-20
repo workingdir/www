@@ -10,6 +10,7 @@ mod shell;
 mod site;
 #[cfg(feature = "ssh")]
 mod ssh;
+mod sync;
 mod theme;
 mod vfs;
 
@@ -30,6 +31,7 @@ fn main() {
     match mode.as_str() {
         "local" => local(),
         "web" => {
+            sync::start();
             eprintln!("http → http://{}", http_addr());
             http::serve(&http_addr());
         }
@@ -41,6 +43,7 @@ fn main() {
 /// The faux shell over stdio: same engine the SSH server runs.
 fn local() {
     use std::io::{self, BufRead};
+    sync::refresh(); // one best-effort pass so the project list is populated
     let mut sh = shell::Shell::new();
     print!("{}", sh.motd());
     let stdin = io::stdin();
@@ -63,6 +66,7 @@ fn local() {
 
 #[cfg(feature = "ssh")]
 fn serve() {
+    sync::start();
     let h = http_addr();
     std::thread::spawn(move || http::serve(&h));
     eprintln!("http → http://{}", http_addr());
@@ -72,6 +76,7 @@ fn serve() {
 
 #[cfg(not(feature = "ssh"))]
 fn serve() {
+    sync::start();
     eprintln!("http → http://{}", http_addr());
     eprintln!("(ssh transport disabled — rebuild with `--features ssh`)");
     http::serve(&http_addr());

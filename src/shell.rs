@@ -361,13 +361,12 @@ mod tests {
 
     #[test]
     fn navigates_and_reads() {
+        // Uses the static site/ tree, which does not depend on a repo sync.
         let mut sh = Shell::new();
-        sh.exec("cd projects");
-        assert!(strip(&sh.exec("ls").out).contains("helio"));
-        sh.exec("cd helio");
-        assert_eq!(strip(&sh.prompt()).trim(), "~/cwd/projects/helio $");
-        assert!(strip(&sh.exec("cat README.md").out).contains("helio"));
-        sh.exec("cd ..");
+        sh.exec("cd site");
+        assert!(strip(&sh.exec("ls").out).contains("index.html"));
+        assert_eq!(strip(&sh.prompt()).trim(), "~/cwd/site $");
+        assert!(strip(&sh.exec("cat README.md").out).contains("site"));
         sh.exec("cd ..");
         assert_eq!(strip(&sh.prompt()).trim(), "~/cwd $");
     }
@@ -383,9 +382,9 @@ mod tests {
     fn open_builds_url() {
         let mut sh = Shell::new();
         assert!(sh
-            .exec("open helio")
+            .exec("open www")
             .out
-            .contains("github.com/workingdir/helio"));
+            .contains("github.com/workingdir/www"));
     }
 
     #[test]

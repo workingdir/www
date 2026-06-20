@@ -8,8 +8,10 @@ COPY . .
 RUN cargo build --release --features ssh
 
 FROM debian:bookworm-slim
+# git for the git-over-ssh bridge and repo mirroring; curl + jq to list the org's
+# repos from the GitHub API.
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends git ca-certificates \
+  && apt-get install -y --no-install-recommends git ca-certificates curl jq \
   && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/target/release/cwd /usr/local/bin/cwd
 

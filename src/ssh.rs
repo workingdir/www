@@ -14,7 +14,6 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::process::Command as Cmd;
 
 pub fn serve(addr: &str) {
-    crate::repos::ensure();
     let rt = tokio::runtime::Runtime::new().expect("tokio runtime");
     rt.block_on(async move {
         let key = host_key();

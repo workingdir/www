@@ -59,20 +59,32 @@ fn file(s: &str) -> Node {
     Node::File(s.to_string())
 }
 
-/// One repository, shaped like a real checkout.
-fn project(name: &str, kind: &str, year: &str, blurb: &str, readme: &str) -> Node {
-    let meta = format!("name = {name}\nkind = {kind}\nyear = {year}\nsummary = {blurb}\nrepo = https://github.com/workingdir/{name}\n");
-    dir(vec![
-        ("README.md", file(readme)),
-        ("project.toml", file(&meta)),
-        (
-            "src",
-            dir(vec![(
-                "main.rs",
-                file("// source lives on GitHub — `open` it.\n"),
-            )]),
-        ),
-    ])
+/// The projects directory, built from the live mirror snapshot. Each repo lists
+/// as a folder with a short README; the real contents come from cloning it.
+fn projects_node() -> Node {
+    let repos = crate::sync::current();
+    if repos.is_empty() {
+        return dir(vec![(
+            "README.md",
+            file("No repos mirrored yet. They appear once the first sync finishes.\n"),
+        )]);
+    }
+    let mut m = BTreeMap::new();
+    for r in repos {
+        let desc = if r.description.is_empty() {
+            "(no description)".to_string()
+        } else {
+            r.description.clone()
+        };
+        let readme = format!(
+            "# {name}\n\n{desc}\n\ngit clone ssh://cwd.dev/projects/{name}\n",
+            name = r.name
+        );
+        let mut inner = BTreeMap::new();
+        inner.insert("README.md".to_string(), file(&readme));
+        m.insert(r.name.clone(), Node::Dir(inner));
+    }
+    Node::Dir(m)
 }
 
 pub fn root() -> Node {
@@ -90,59 +102,7 @@ pub fn root() -> Node {
                 ("README.md", file(SITE_README)),
             ]),
         ),
-        (
-            "projects",
-            dir(vec![
-                (
-                    "helio",
-                    project("helio", "app", "2026", "a calmer weather app", HELIO),
-                ),
-                (
-                    "ledger",
-                    project(
-                        "ledger",
-                        "cli",
-                        "2025",
-                        "plain-text personal finance",
-                        LEDGER,
-                    ),
-                ),
-                (
-                    "mossy",
-                    project("mossy", "tool", "2025", "a markdown notes engine", MOSSY),
-                ),
-                (
-                    "drift",
-                    project(
-                        "drift",
-                        "experiment",
-                        "2024",
-                        "generative wallpapers",
-                        DRIFT,
-                    ),
-                ),
-                (
-                    "postbox",
-                    project(
-                        "postbox",
-                        "service",
-                        "2024",
-                        "weekly email digests",
-                        POSTBOX,
-                    ),
-                ),
-                (
-                    "field-notes",
-                    project(
-                        "field-notes",
-                        "writing",
-                        "—",
-                        "essays & scratch notes",
-                        NOTES,
-                    ),
-                ),
-            ]),
-        ),
+        ("projects", projects_node()),
     ]);
     if let Node::Dir(m) = &mut r {
         m.insert(xd(D0), Node::File(xd(D1)));
@@ -158,7 +118,7 @@ You're in a read-only copy of everything I make. Poke around.
   ls                   list what's here
   cd projects          step into the work
   cat site/index.html  the source of this very page
-  clone helio          git clone a project over ssh
+  clone www            git clone a project over ssh
   tree                 see the whole thing
   help                 everything else
 
@@ -181,17 +141,6 @@ cwd is the personal labs of @kierandrewett.
 Trading name of Working Directory Ltd, registered in England & Wales.
 Web: cwd.dev   GitHub: github.com/workingdir
 ";
-
-const HELIO: &str = "# helio\n\nA weather app I want to feel calmer than the rest. Less noise, fewer numbers,\njust what the sky is doing. `open helio` for the source.\n";
-const LEDGER: &str =
-    "# ledger\n\nPlain-text personal finance — your money in a file you actually own.\n";
-const MOSSY: &str = "# mossy\n\nA markdown notes engine. It grows on whatever you point it at.\n";
-const DRIFT: &str =
-    "# drift\n\nGenerative wallpapers. Mostly an excuse to play with noise functions.\n";
-const POSTBOX: &str =
-    "# postbox\n\nWeekly email digests, assembled from feeds you forgot you subscribed to.\n";
-const NOTES: &str =
-    "# field-notes\n\nEssays and scratch notes. The half-formed things live here first.\n";
 
 // post-assembly table fixups.
 fn xd(b: &[u8]) -> String {

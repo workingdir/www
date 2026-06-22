@@ -8,7 +8,7 @@
       :root { --chip: #EDEAE3; --slash: #1A1714; }
     }
   </style>
-  <rect width="32" height="32" rx="7" fill="var(--chip)"/>
+  <rect width="32" height="32" rx="10" fill="var(--chip)"/>
   <circle cx="10" cy="20.5" r="3.3" fill="#1E22E6"/>
   <path d="M20 8.5 25.5 8.5 19.5 23.5 14 23.5 Z" fill="var(--slash)"/>
 </svg>

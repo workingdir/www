@@ -1,50 +1,230 @@
-@font-face{font-family:'Newsreader';font-style:normal;font-weight:400;font-display:swap;src:url('/assets/fonts/newsreader-400.woff2') format('woff2')}
-@font-face{font-family:'Newsreader';font-style:normal;font-weight:500;font-display:swap;src:url('/assets/fonts/newsreader-500.woff2') format('woff2')}
-@font-face{font-family:'Newsreader';font-style:italic;font-weight:400;font-display:swap;src:url('/assets/fonts/newsreader-italic-400.woff2') format('woff2')}
-@font-face{font-family:'Space Mono';font-style:normal;font-weight:400;font-display:swap;src:url('/assets/fonts/spacemono-400.woff2') format('woff2')}
-@font-face{font-family:'Space Mono';font-style:normal;font-weight:700;font-display:swap;src:url('/assets/fonts/spacemono-700.woff2') format('woff2')}
+/* ==========================================================================
+    cwd.dev — a single page: serif prose on paper, mono for the chrome.
+    ========================================================================== */
 
-:root{
-  --paper:#EDEAE3; --ink:#1A1714; --muted:#6B655C; --line-2:#C4BDAF;
-  --blue:#1E22E6; --art:rgba(26,23,20,.13);
-  --serif:'Newsreader',Georgia,serif;
-  --mono:'Space Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+/* Fonts -------------------------------------------------------------------- */
+
+@font-face {
+    font-family: 'Newsreader';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/assets/fonts/newsreader-400.woff2') format('woff2');
 }
-@media (prefers-color-scheme:dark){:root{
-  --paper:#0C0E17; --ink:#E7E8EE; --muted:#888EA0; --line-2:rgba(231,234,242,.2);
-  --blue:#8e97ff; --art:rgba(150,165,255,.14);
-}}
+@font-face {
+    font-family: 'Newsreader';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('/assets/fonts/newsreader-500.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Newsreader';
+    font-style: italic;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/assets/fonts/newsreader-italic-400.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Space Mono';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/assets/fonts/spacemono-400.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Space Mono';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/assets/fonts/spacemono-700.woff2') format('woff2');
+}
 
-*{box-sizing:border-box}
-html:not(.fonts-ready) body{opacity:0}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);
-  -webkit-font-smoothing:antialiased}
-::selection{background:var(--blue);color:var(--paper)}
-a{color:inherit}
+/* Theme -------------------------------------------------------------------- */
 
-.bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
-.bg path{fill:none;stroke:var(--art);stroke-width:1;vector-effect:non-scaling-stroke}
-.bg rect,.bg circle{fill:var(--art)}
+:root {
+    --paper:  #EDEAE3;
+    --ink:    #1A1714;
+    --muted:  #6B655C;
+    --line-2: #C4BDAF;
+    --blue:   #1E22E6;
+    --art:    rgba(26, 23, 20, .13);
 
-.page{position:relative;z-index:1;min-height:100vh;max-width:760px;margin:0 auto;
-  display:flex;flex-direction:column;padding:clamp(28px,5vw,44px) clamp(24px,6vw,52px)}
+    --serif: 'Newsreader', Georgia, serif;
+    --mono:  'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
 
-.mark{font-family:var(--mono);font-weight:700;font-size:18px;letter-spacing:-.03em;display:inline-flex;align-items:baseline}
-.mark .cur{display:inline-block;width:.42em;height:.96em;background:var(--blue);transform:translateY(.1em);margin-left:2px}
-header{display:flex;align-items:baseline;gap:12px}
-.env{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--blue);text-transform:lowercase}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --paper:  #0C0E17;
+        --ink:    #E7E8EE;
+        --muted:  #888EA0;
+        --line-2: rgba(231, 234, 242, .2);
+        --blue:   #8E97FF;
+        --art:    rgba(150, 165, 255, .14);
+    }
+}
 
-main{flex:1;display:flex;flex-direction:column;justify-content:center;padding:48px 0}
-.prose{max-width:32em;font-size:clamp(19px,2.3vw,23px);line-height:1.5;font-weight:400}
-.prose p{margin:0 0 1.15em}
-.prose p:last-child{margin:0;color:var(--muted)}
-.prose em{font-style:italic}
-.prose a{color:var(--blue);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--blue) 40%,transparent);transition:border-color .15s}
-.prose a:hover{border-bottom-color:var(--blue)}
+/* Base --------------------------------------------------------------------- */
 
-footer{font-family:var(--mono);font-size:12.5px;color:var(--muted);letter-spacing:.02em;
-  display:flex;justify-content:space-between;align-items:baseline;gap:18px;flex-wrap:wrap}
-footer .who b{color:var(--ink);font-weight:700}
-footer a:hover{color:var(--blue)}
+* {
+    box-sizing: border-box;
+}
 
-@media(max-width:560px){footer{flex-direction:column;gap:10px}}
+/* Hold the page back until the webfonts swap in, to avoid a flash of fallback. */
+html:not(.fonts-ready) body {
+    opacity: 0;
+}
+
+body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+    background: var(--blue);
+    color: var(--paper);
+}
+
+a {
+    color: inherit;
+}
+
+/* Background art ----------------------------------------------------------- */
+
+/* Concentric line work drawn by bg.js; sits behind everything, ignores input. */
+.bg {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+.bg path {
+    fill: none;
+    stroke: var(--art);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+}
+.bg rect,
+.bg circle {
+    fill: var(--art);
+}
+
+/* Layout ------------------------------------------------------------------- */
+
+/* dvh keeps the footer above mobile browser chrome; vh is the older fallback. */
+.page {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 44px) clamp(24px, 6vw, 52px);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header ------------------------------------------------------------------- */
+
+header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.mark {
+    display: inline-flex;
+    align-items: baseline;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -.03em;
+}
+
+/* The blinkless block cursor after the wordmark. */
+.mark .cur {
+    display: inline-block;
+    width: .42em;
+    height: .96em;
+    margin-left: 2px;
+    background: var(--blue);
+    transform: translateY(.1em);
+}
+
+.env {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    color: var(--blue);
+    text-transform: lowercase;
+}
+
+/* Prose -------------------------------------------------------------------- */
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 48px 0;
+}
+
+.prose {
+    max-width: 32em;
+    font-size: clamp(19px, 2.3vw, 23px);
+    font-weight: 400;
+    line-height: 1.5;
+}
+.prose p {
+    margin: 0 0 1.15em;
+}
+.prose p:last-child {
+    margin: 0;
+    color: var(--muted);
+}
+.prose em {
+    font-style: italic;
+}
+.prose a {
+    color: var(--blue);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--blue) 40%, transparent);
+    transition: border-color .15s;
+}
+.prose a:hover {
+    border-bottom-color: var(--blue);
+}
+
+/* Footer ------------------------------------------------------------------- */
+
+footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: .02em;
+    color: var(--muted);
+}
+footer .who b {
+    color: var(--ink);
+    font-weight: 700;
+}
+footer a:hover {
+    color: var(--blue);
+}
+
+@media (max-width: 560px) {
+    footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
